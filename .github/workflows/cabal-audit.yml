@@ -5,27 +5,27 @@ on:
   push:
     branches:
       - main
+      - release
   pull_request:
     branches:
       - main
+      - release
 
 jobs:
   build:
     name: Build cabal-audit
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Nix
-        uses: cachix/install-nix-action@v26
-
-      - name: Set up cachix
-        uses: cachix/cachix-action@v14
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v20
         with:
-          name: cabal-audit
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+          extra_nix_config: |
+            system-features = nixos-test benchmark big-parallel kvm
+      - uses: DeterminateSystems/magic-nix-cache-action@main
 
       - name: Check flake 
         run: | 
@@ -53,7 +53,7 @@ jobs:
           path: artifacts/cabal-audit
 
       - name: Release nightly cabal-audit exe
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/release'
         uses: softprops/action-gh-release@v2
         with:
           prerelease: true
