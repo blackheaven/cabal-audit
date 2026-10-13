@@ -10,11 +10,9 @@
     overrides =
       lib.composeExtensions
       (import ./haskell-overlay.nix {inherit hlib;})
-      (hself: hsuper: {
-        Cabal-syntax = hsuper.Cabal-syntax_3_10_3_0;
-        Cabal = hsuper.Cabal_3_10_3_0;
-        cabal-install-solver = hself.callHackage "cabal-install-solver" "3.10.3.0" {};
-        cabal-install = hself.callHackage "cabal-install" "3.10.3.0" {
+      (hself: _: {
+        cabal-install-solver = hself.callHackage "cabal-install-solver" "3.16.1.0" {};
+        cabal-install = hself.callHackage "cabal-install" "3.16.1.0" {
           Cabal-QuickCheck = null;
           Cabal-described = null;
           Cabal-tree-diff = null;
