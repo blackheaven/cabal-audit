@@ -11,12 +11,22 @@
       lib.composeExtensions
       (import ./haskell-overlay.nix {inherit hlib;})
       (hself: _: {
-        cabal-install-solver = hself.callHackage "cabal-install-solver" "3.16.1.0" {};
-        cabal-install = hself.callHackage "cabal-install" "3.16.1.0" {
-          Cabal-QuickCheck = null;
-          Cabal-described = null;
-          Cabal-tree-diff = null;
-        };
+        cabal-install-solver = hself.callHackageDirect {
+          pkg = "cabal-install-solver";
+          ver = "3.16.1.0";
+          sha256 = "sha256-BjRXWha4kiedo/Fi3qr2LXixvuQvXD62XJ4pLZ6yq3c=";
+        } {};
+        cabal-install =
+          hself.callHackageDirect {
+            pkg = "cabal-install";
+            ver = "3.16.1.0";
+            sha256 = "sha256-6ssSeM1oeXVCLR5/HPxYEUkcEWU8XxlqZiBl1JHbMbw=";
+          } {
+            Cabal-QuickCheck = null;
+            Cabal-described = null;
+            Cabal-tree-diff = null;
+            Cabal-tests = null;
+          };
       });
   };
 in
