@@ -26,17 +26,21 @@
           ver = "1.4.100.1";
           sha256 = "sha256-bYPdD8f7vgcrgpXLF6b/P+o135KXqZW792XUeflmc2E=";
         } {};
-        # Setup.hs links the boot Cabal-syntax 3.8 while the library itself
-        # is 3.16; that mismatch is harmless and the default strict check
-        # aborts on it.
         Cabal-syntax =
           hlib.overrideCabal (_: {
             allowInconsistentDependencies = true;
           })
           hsuper.Cabal-syntax;
         Cabal =
-          hlib.overrideCabal (_: {
+          hlib.overrideCabal (old: {
             allowInconsistentDependencies = true;
+            libraryHaskellDepends =
+              map
+              (p:
+                if (p.pname or "") == "Cabal-syntax"
+                then hself.Cabal-syntax
+                else p)
+              (old.libraryHaskellDepends or []);
           })
           hsuper.Cabal;
         semaphore-compat =
