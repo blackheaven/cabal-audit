@@ -11,38 +11,24 @@
       lib.composeExtensions
       (import ./haskell-overlay.nix {inherit hlib;})
       (hself: hsuper: {
-        # Cabal-3.16 pulls in semaphore-compat-1.0.0, which needs
-        # unix >= 2.8.1 (semWaitInterruptible); the static GHC 9.4
-        # toolchain ships unix-2.7.3, and boot libs can't be overridden
-        # from the package set. semThreadWait is the same call minus the
-        # interruptible FFI marker - irrelevant for a one-shot CLI.
-        os-string = hself.callHackageDirect {
-          pkg = "os-string";
-          ver = "2.0.7";
-          sha256 = "sha256-u7ImqUt/HZlo61gwMXlB+CS3K19D+QCvzHQpqjsPCrY=";
-        } {};
-        filepath = hself.callHackageDirect {
-          pkg = "filepath";
-          ver = "1.4.100.1";
-          sha256 = "sha256-bYPdD8f7vgcrgpXLF6b/P+o135KXqZW792XUeflmc2E=";
-        } {};
+        # Setup.hs links the boot Cabal-syntax 3.8 while the library is 3.16;
+        # that mismatch is harmless, but the builder's strict configure check
+        # aborts on it.
         Cabal-syntax =
           hlib.overrideCabal (_: {
             allowInconsistentDependencies = true;
           })
           hsuper.Cabal-syntax;
         Cabal =
-          hlib.overrideCabal (old: {
+          hlib.overrideCabal (_: {
             allowInconsistentDependencies = true;
-            libraryHaskellDepends =
-              map
-              (p:
-                if (p.pname or "") == "Cabal-syntax"
-                then hself.Cabal-syntax
-                else p)
-              (old.libraryHaskellDepends or []);
           })
           hsuper.Cabal;
+        # Cabal-3.16 pulls in semaphore-compat-1.0.0, which needs
+        # unix >= 2.8.1 (semWaitInterruptible); the static GHC 9.4
+        # toolchain ships unix-2.7.3, and boot libs can't be overridden
+        # from the package set. semThreadWait is the same call minus the
+        # interruptible FFI marker - irrelevant for a one-shot CLI.
         semaphore-compat =
           hlib.overrideCabal (old: {
             preConfigure =
