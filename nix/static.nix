@@ -26,6 +26,19 @@
           ver = "1.4.100.1";
           sha256 = "sha256-bYPdD8f7vgcrgpXLF6b/P+o135KXqZW792XUeflmc2E=";
         } {};
+        # Setup.hs links the boot Cabal-syntax 3.8 while the library itself
+        # is 3.16; that mismatch is harmless and the default strict check
+        # aborts on it.
+        Cabal-syntax =
+          hlib.overrideCabal (_: {
+            allowInconsistentDependencies = true;
+          })
+          hsuper.Cabal-syntax;
+        Cabal =
+          hlib.overrideCabal (_: {
+            allowInconsistentDependencies = true;
+          })
+          hsuper.Cabal;
         semaphore-compat =
           hlib.overrideCabal (old: {
             preConfigure =
@@ -39,22 +52,33 @@
               '';
           })
           hsuper.semaphore-compat;
-        cabal-install-solver = hself.callHackageDirect {
-          pkg = "cabal-install-solver";
-          ver = "3.16.1.0";
-          sha256 = "sha256-BjRXWha4kiedo/Fi3qr2LXixvuQvXD62XJ4pLZ6yq3c=";
-        } {};
+        cabal-install-solver =
+          hlib.overrideCabal (_: {
+            allowInconsistentDependencies = true;
+          })
+          (
+            hself.callHackageDirect {
+              pkg = "cabal-install-solver";
+              ver = "3.16.1.0";
+              sha256 = "sha256-BjRXWha4kiedo/Fi3qr2LXixvuQvXD62XJ4pLZ6yq3c=";
+            } {}
+          );
         cabal-install =
-          hself.callHackageDirect {
-            pkg = "cabal-install";
-            ver = "3.16.1.0";
-            sha256 = "sha256-6ssSeM1oeXVCLR5/HPxYEUkcEWU8XxlqZiBl1JHbMbw=";
-          } {
-            Cabal-QuickCheck = null;
-            Cabal-described = null;
-            Cabal-tree-diff = null;
-            Cabal-tests = null;
-          };
+          hlib.overrideCabal (_: {
+            allowInconsistentDependencies = true;
+          })
+          (
+            hself.callHackageDirect {
+              pkg = "cabal-install";
+              ver = "3.16.1.0";
+              sha256 = "sha256-6ssSeM1oeXVCLR5/HPxYEUkcEWU8XxlqZiBl1JHbMbw=";
+            } {
+              Cabal-QuickCheck = null;
+              Cabal-described = null;
+              Cabal-tree-diff = null;
+              Cabal-tests = null;
+            }
+          );
       });
   };
 in
