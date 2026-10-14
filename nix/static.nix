@@ -27,8 +27,16 @@
             } {}
           );
         Cabal =
-          hlib.overrideCabal (_: {
+          hlib.overrideCabal (old: {
             allowInconsistentDependencies = true;
+            # Cabal declares unix >= 2.8.6 for withFilePath, which base-4.17's
+            # System.Posix.Internals already provides; the static GHC 9.4
+            # toolchain ships unix-2.7.3.
+            preConfigure =
+              (old.preConfigure or "")
+              + ''
+                sed -i 's/>= 2.8.6.0 && < 2.9/>= 2.7.0.1/' Cabal.cabal
+              '';
           })
           (
             hself.callHackageDirect {
