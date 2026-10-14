@@ -11,24 +11,32 @@
       lib.composeExtensions
       (import ./haskell-overlay.nix {inherit hlib;})
       (hself: hsuper: {
-        # Setup.hs links the boot Cabal-syntax 3.8 while the library is 3.16;
-        # that mismatch is harmless, but the builder's strict configure check
-        # aborts on it.
+        # cabal-install-3.16.1.0 needs Cabal/Cabal-syntax 3.16.1.0, which
+        # are newer than the reserved nixpkgs packages; pull them from
+        # hackage. Setup.hs links the boot Cabal-syntax 3.8 alongside them -
+        # harmless, but the builder's strict configure check aborts on it.
         Cabal-syntax =
           hlib.overrideCabal (_: {
             allowInconsistentDependencies = true;
           })
-          hsuper.Cabal-syntax;
+          (
+            hself.callHackageDirect {
+              pkg = "Cabal-syntax";
+              ver = "3.16.1.0";
+              sha256 = "sha256-BbUQ4d221OlNLo+BoFzWDaaSZ5f2242xFV4199Iqw78=";
+            } {}
+          );
         Cabal =
           hlib.overrideCabal (_: {
             allowInconsistentDependencies = true;
           })
-          hsuper.Cabal;
-        # Cabal-3.16 pulls in semaphore-compat-1.0.0, which needs
-        # unix >= 2.8.1 (semWaitInterruptible); the static GHC 9.4
-        # toolchain ships unix-2.7.3, and boot libs can't be overridden
-        # from the package set. semThreadWait is the same call minus the
-        # interruptible FFI marker - irrelevant for a one-shot CLI.
+          (
+            hself.callHackageDirect {
+              pkg = "Cabal";
+              ver = "3.16.1.0";
+              sha256 = "sha256-d1JZjKk75l22NNyY4cdWjUVnKIvREwBnSvCuwnLfJT4=";
+            } {}
+          );
         semaphore-compat =
           hlib.overrideCabal (old: {
             preConfigure =
